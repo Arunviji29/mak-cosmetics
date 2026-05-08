@@ -7,6 +7,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Backend Running");
+});
 
 const razorpay = new Razorpay({
   key_id: "rzp_test_SlI1qCPtzNiIzm",
