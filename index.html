@@ -241,7 +241,7 @@
         let total = cart.reduce((s, i) => s + i.price, 0) * 100;
 
         const res = await fetch(
-          "https://arunviji29.github.io/mak-cosmetics/create-order",
+          "https://arunviji29.github.io/mak-cosmetics",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -259,7 +259,7 @@
 
           handler: async function (response) {
             const verify = await fetch(
-              "https://arunviji29.github.io/mak-cosmetics/verify-payment",
+              "https://arunviji29.github.io/mak-cosmetics",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
