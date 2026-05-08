@@ -240,11 +240,14 @@
 
         let total = cart.reduce((s, i) => s + i.price, 0) * 100;
 
-        const res = await fetch("http://localhost:5000/create-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: total }),
-        });
+        const res = await fetch(
+          "https://arunviji29.github.io/mak-cosmetics/create-order",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: total }),
+          },
+        );
 
         const order = await res.json();
 
@@ -255,11 +258,14 @@
           order_id: order.id,
 
           handler: async function (response) {
-            const verify = await fetch("http://localhost:5000/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
-            });
+            const verify = await fetch(
+              "https://arunviji29.github.io/mak-cosmetics/verify-payment",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(response),
+              },
+            );
 
             const result = await verify.json();
 
@@ -267,8 +273,6 @@
               alert("Payment failed");
               return;
             }
-            
-          
 
             await db.collection("orders").add({
               items: cart,
