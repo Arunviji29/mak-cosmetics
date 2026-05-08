@@ -230,7 +230,7 @@
 
         cartDiv.innerHTML += `<h4>Total: ₹${total}</h4>`;
       }
-
+const BACKEND_URL = "https://mak-backend.onrender.com";
       // PAYMENT
       async function placeOrder() {
         if (cart.length === 0) {
@@ -240,14 +240,11 @@
 
         let total = cart.reduce((s, i) => s + i.price, 0) * 100;
 
-        const res = await fetch(
-          "https://arunviji29.github.io/mak-cosmetics",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: total }),
-          },
-        );
+        const res = await fetch(`${BACKEND_URL}/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: total }),
+        });
 
         const order = await res.json();
 
@@ -258,14 +255,11 @@
           order_id: order.id,
 
           handler: async function (response) {
-            const verify = await fetch(
-              "https://arunviji29.github.io/mak-cosmetics",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(response),
-              },
-            );
+            const verify = await fetch(`${BACKEND_URL}/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
 
             const result = await verify.json();
 
