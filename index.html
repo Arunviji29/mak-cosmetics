@@ -107,7 +107,6 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
-      import { initializeApp } from "firebase/app";
       const firebaseConfig = {
         apiKey: "AIzaSyAK7fgo0x1wh3bVB8WTGjlKN7M3lUmdn_k",
         authDomain: "makcosmetics-19118.firebaseapp.com",
@@ -209,7 +208,27 @@
       // CART
       function addToCart(name, price) {
         cart.push({ name, price });
+
+        renderCart();
+
         alert(name + " added");
+      }
+      function renderCart() {
+        const cartDiv = document.getElementById("cart");
+
+        cartDiv.innerHTML = "";
+
+        let total = 0;
+
+        cart.forEach((item) => {
+          total += item.price;
+
+          cartDiv.innerHTML += `
+      <p>${item.name} - ₹${item.price}</p>
+    `;
+        });
+
+        cartDiv.innerHTML += `<h4>Total: ₹${total}</h4>`;
       }
 
       // PAYMENT
@@ -248,6 +267,8 @@
               alert("Payment failed");
               return;
             }
+            
+          
 
             await db.collection("orders").add({
               items: cart,
@@ -257,6 +278,7 @@
 
             alert("Order placed");
             cart = [];
+            renderCart();
           },
         };
 
