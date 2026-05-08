@@ -58,7 +58,9 @@ app.post("/verify-payment", (req, res) => {
     res.json({ status: "failed" });
   }
 });
-
+self.addEventListener('install', () => {
+  console.log("Service Worker Installed");
+});
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
