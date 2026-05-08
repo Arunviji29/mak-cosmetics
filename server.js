@@ -15,19 +15,26 @@ const razorpay = new Razorpay({
 
 // CREATE ORDER
 app.post("/create-order", async (req, res) => {
+
   try {
+
     const options = {
       amount: req.body.amount,
       currency: "INR",
+      receipt: "receipt_order"
     };
 
     const order = await razorpay.orders.create(options);
 
     res.json(order);
+
   } catch (err) {
+
     console.log(err);
-    res.status(500).send("Error");
+    res.status(400).send(err);
+
   }
+
 });
 
 // VERIFY PAYMENT
