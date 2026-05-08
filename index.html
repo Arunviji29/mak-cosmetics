@@ -1,269 +1,277 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <title>MAK Cosmetics</title>
+    <link rel="icon" href="logo.png" />
 
-<head>
-  <title>MAK Cosmetics</title>
-  <link rel="icon" href="logo.png">
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7f7f7;
+        margin: 0;
+      }
 
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-    }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ff2e7a;
+        color: white;
+        padding: 15px 20px;
+      }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #ff2e7a;
-      color: white;
-      padding: 15px 20px;
-    }
+      .container {
+        padding: 20px;
+      }
 
-    .container {
-      padding: 20px;
-    }
+      input,
+      select {
+        padding: 10px;
+        margin: 10px 5px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
 
-    input, select {
-      padding: 10px;
-      margin: 10px 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+      button {
+        background: #ff2e7a;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
 
-    button {
-      background: #ff2e7a;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-    }
+      .card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
+      .card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
 
-    .card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-  </style>
-</head>
+  <body>
+    <header>
+      <h2>MAK Cosmetics</h2>
+      <div>
+        <button onclick="login()">Login</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </header>
 
-<body>
+    <div class="container">
+      <input
+        type="text"
+        id="search"
+        placeholder="Search..."
+        onkeyup="loadProducts()"
+      />
 
-<header>
-  <h2>MAK Cosmetics</h2>
-  <div>
-    <button onclick="login()">Login</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</header>
+      <select id="category" onchange="loadProducts()">
+        <option value="">All</option>
+        <option value="makeup">Makeup</option>
+        <option value="skincare">Skincare</option>
+        <option value="hair">Hair</option>
+      </select>
 
-<div class="container">
+      <button onclick="addProduct()">Add Product</button>
+      <button onclick="placeOrder()">Checkout</button>
 
-  <input type="text" id="search" placeholder="Search..." onkeyup="loadProducts()">
+      <div id="products" class="grid"></div>
+      <h3>🛒 Cart</h3>
+      <div id="cart"></div>
+      <button onclick="placeOrder()">Checkout</button>
+    </div>
 
-  <select id="category" onchange="loadProducts()">
-    <option value="">All</option>
-    <option value="makeup">Makeup</option>
-    <option value="skincare">Skincare</option>
-    <option value="hair">Hair</option>
-  </select>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-  <button onclick="addProduct()">Add Product</button>
-  <button onclick="placeOrder()">Checkout</button>
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <div id="products" class="grid"></div>
-  <h3>🛒 Cart</h3>
-<div id="cart"></div>
-<button onclick="placeOrder()">Checkout</button>
-  
+    <script>
+      import { initializeApp } from "firebase/app";
+      const firebaseConfig = {
+        apiKey: "AIzaSyAK7fgo0x1wh3bVB8WTGjlKN7M3lUmdn_k",
+        authDomain: "makcosmetics-19118.firebaseapp.com",
+        projectId: "makcosmetics-19118",
+        storageBucket: "makcosmetics-19118.firebasestorage.app",
+        messagingSenderId: "770446803728",
+        appId: "1:770446803728:web:b4490b0441080298c0db95",
+      };
+      // Import the functions you need from the SDKs you need
 
-</div>
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+      // Your web app's Firebase configuration
 
-<!-- Razorpay -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      // Initialize Firebase
 
-<script>
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  appId: "YOUR_APP_ID"
-};
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const storage = firebase.storage();
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+      let cart = [];
+      const ADMIN_EMAIL = "your@email.com";
 
-let cart = [];
-const ADMIN_EMAIL = "your@email.com";
+      // AUTH
+      async function login() {
+        let email = prompt("Email");
+        let pass = prompt("Password");
+        await firebase.auth().signInWithEmailAndPassword(email, pass);
+        alert("Login success");
+      }
 
-// AUTH
-async function login() {
-  let email = prompt("Email");
-  let pass = prompt("Password");
-  await firebase.auth().signInWithEmailAndPassword(email, pass);
-  alert("Login success");
-}
+      function logout() {
+        firebase.auth().signOut();
+      }
 
-function logout() {
-  firebase.auth().signOut();
-}
+      // ADD PRODUCT
+      async function addProduct() {
+        const user = firebase.auth().currentUser;
+        if (!user || user.email !== ADMIN_EMAIL) {
+          alert("Admin only");
+          return;
+        }
 
-// ADD PRODUCT
-async function addProduct() {
-  const user = firebase.auth().currentUser;
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("Admin only");
-    return;
-  }
+        let name = prompt("Name");
+        let price = prompt("Price");
+        let category = prompt("Category");
 
-  let name = prompt("Name");
-  let price = prompt("Price");
-  let category = prompt("Category");
+        let input = document.createElement("input");
+        input.type = "file";
 
-  let input = document.createElement("input");
-  input.type = "file";
+        input.onchange = async (e) => {
+          let file = e.target.files[0];
 
-  input.onchange = async (e) => {
-    let file = e.target.files[0];
+          const ref = storage.ref("products/" + file.name);
+          await ref.put(file);
 
-    const ref = storage.ref("products/" + file.name);
-    await ref.put(file);
+          const imageURL = await ref.getDownloadURL();
 
-    const imageURL = await ref.getDownloadURL();
+          await db.collection("products").add({
+            name,
+            price: Number(price),
+            category,
+            image: imageURL,
+          });
 
-    await db.collection("products").add({
-      name,
-      price: Number(price),
-      category,
-      image: imageURL
-    });
+          alert("Added");
+          loadProducts();
+        };
 
-    alert("Added");
-    loadProducts();
-  };
+        input.click();
+      }
 
-  input.click();
-  
-}
+      // LOAD PRODUCTS
+      async function loadProducts() {
+        const container = document.getElementById("products");
+        container.innerHTML = "";
 
-// LOAD PRODUCTS
-async function loadProducts() {
-  const container = document.getElementById("products");
-  container.innerHTML = "";
+        const search = document.getElementById("search").value.toLowerCase();
+        const category = document.getElementById("category").value;
 
-  const search = document.getElementById("search").value.toLowerCase();
-  const category = document.getElementById("category").value;
+        const snap = await db.collection("products").get();
 
-  const snap = await db.collection("products").get();
+        snap.forEach((doc) => {
+          let p = doc.data();
 
-  snap.forEach(doc => {
-    let p = doc.data();
+          if (
+            (search && !p.name.toLowerCase().includes(search)) ||
+            (category && p.category !== category)
+          )
+            return;
 
-    if (
-      (search && !p.name.toLowerCase().includes(search)) ||
-      (category && p.category !== category)
-    ) return;
+          let div = document.createElement("div");
+          div.className = "card";
 
-    let div = document.createElement("div");
-    div.className = "card";
-
-    div.innerHTML = `
-      <img src="${p.image || 'https://via.placeholder.com/150'}" />
+          div.innerHTML = `
+      <img src="${p.image || "https://via.placeholder.com/150"}" />
       <h3>${p.name}</h3>
       <p>₹${p.price}</p>
       <button onclick="addToCart('${p.name}', ${p.price})">Add</button>
     `;
 
-    container.appendChild(div);
-  });
-}
-
-// CART
-function addToCart(name, price) {
-  cart.push({ name, price });
-  alert(name + " added");
-}
-
-// PAYMENT
-async function placeOrder() {
-  if (cart.length === 0) {
-    alert("Cart empty");
-    return;
-  }
-
-  let total = cart.reduce((s, i) => s + i.price, 0) * 100;
-
-  const res = await fetch("http://localhost:5000/create-order", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ amount: total })
-  });
-
-  const order = await res.json();
-
-  var options = {
-    key: "YOUR_RAZORPAY_KEY",
-    amount: order.amount,
-    currency: "INR",
-    order_id: order.id,
-
-    handler: async function (response) {
-
-      const verify = await fetch("http://localhost:5000/verify-payment", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(response)
-      });
-
-      const result = await verify.json();
-
-      if (result.status !== "success") {
-        alert("Payment failed");
-        return;
+          container.appendChild(div);
+        });
       }
 
-      await db.collection("orders").add({
-        items: cart,
-        user: firebase.auth().currentUser?.email || "guest",
-        createdAt: new Date()
-      });
+      // CART
+      function addToCart(name, price) {
+        cart.push({ name, price });
+        alert(name + " added");
+      }
 
-      alert("Order placed");
-      cart = [];
-    }
-  };
+      // PAYMENT
+      async function placeOrder() {
+        if (cart.length === 0) {
+          alert("Cart empty");
+          return;
+        }
 
-  new Razorpay(options).open();
-}
+        let total = cart.reduce((s, i) => s + i.price, 0) * 100;
 
+        const res = await fetch("http://localhost:5000/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: total }),
+        });
 
-loadProducts();
-</script>
+        const order = await res.json();
 
-</body>
+        var options = {
+          key: "YOUR_RAZORPAY_KEY",
+          amount: order.amount,
+          currency: "INR",
+          order_id: order.id,
+
+          handler: async function (response) {
+            const verify = await fetch("http://localhost:5000/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            const result = await verify.json();
+
+            if (result.status !== "success") {
+              alert("Payment failed");
+              return;
+            }
+
+            await db.collection("orders").add({
+              items: cart,
+              user: firebase.auth().currentUser?.email || "guest",
+              createdAt: new Date(),
+            });
+
+            alert("Order placed");
+            cart = [];
+          },
+        };
+
+        new Razorpay(options).open();
+      }
+
+      loadProducts();
+    </script>
+  </body>
 </html>
