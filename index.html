@@ -89,6 +89,10 @@
   <button onclick="placeOrder()">Checkout</button>
 
   <div id="products" class="grid"></div>
+  <h3>🛒 Cart</h3>
+<div id="cart"></div>
+<button onclick="placeOrder()">Checkout</button>
+  
 
 </div>
 
@@ -164,6 +168,7 @@ async function addProduct() {
   };
 
   input.click();
+  
 }
 
 // LOAD PRODUCTS
@@ -255,6 +260,7 @@ async function placeOrder() {
 
   new Razorpay(options).open();
 }
+
 
 loadProducts();
 </script>
