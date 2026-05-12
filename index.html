@@ -458,6 +458,7 @@ ${
 
         const customerAddress =
           document.getElementById("customerAddress").value;
+          
 
         if (!customerName || !customerPhone || !customerAddress) {
           alert("Fill customer details");
@@ -468,6 +469,12 @@ ${
           alert("Cart empty");
           return;
         }
+        const customer_Name = prompt("Enter Your Name");
+
+  const customer_Phone = prompt("Enter Phone Number");
+
+  const customer_Address = prompt("Enter Delivery Address");
+        
 
         let total = cart.reduce((s, i) => s + i.price * i.qty, 0) * 100;
 
@@ -507,13 +514,22 @@ ${
             }
 
             await db.collection("orders").add({
-              items: cart,
-              customerName,
-              customerPhone,
-              customerAddress,
-              user: firebase.auth().currentUser?.email || "guest",
-              createdAt: new Date(),
-            });
+
+  customerName,
+  customerPhone,
+  customerAddress,
+
+  items: cart,
+
+  total: total / 100,
+
+  user: firebase.auth().currentUser?.email || "guest",
+
+  paymentId: response.razorpay_payment_id,
+
+  createdAt: new Date(),
+
+});
 
             alert("Order placed");
             cart = [];
