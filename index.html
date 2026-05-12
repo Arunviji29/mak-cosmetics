@@ -303,26 +303,23 @@
         input.click();
       }
       async function deleteProduct(id) {
+        const user = firebase.auth().currentUser;
 
-  const user = firebase.auth().currentUser;
+        if (!user || user.email !== ADMIN_EMAIL) {
+          alert("Admin only");
+          return;
+        }
 
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("Admin only");
-    return;
-  }
+        const ok = confirm("Delete product?");
 
-  const ok = confirm("Delete product?");
+        if (!ok) return;
 
-  if (!ok) return;
+        await db.collection("products").doc(id).delete();
 
-  await db.collection("products")
-    .doc(id)
-    .delete();
+        alert("Deleted");
 
-  alert("Deleted");
-
-  loadProducts();
-}
+        loadProducts();
+      }
 
       // LOAD PRODUCTS
       async function loadProducts() {
@@ -352,11 +349,7 @@
       <p>₹${p.price}</p>
 
 <p>
-  ${
-    p.stock > 0
-    ? `In Stock (${p.stock})`
-    : `Out of Stock`
-  }
+  ${p.stock > 0 ? `In Stock (${p.stock})` : `Out of Stock`}
 </p>
       <<button
   onclick="addToCart('${p.name}', ${p.price})"
@@ -365,15 +358,13 @@
 
 ${
   firebase.auth().currentUser?.email === ADMIN_EMAIL
-  ?
-  `<button
+    ? `<button
     onclick="deleteProduct('${doc.id}')"
     style="background:red;margin-top:10px;"
   >
     Delete
   </button>`
-  :
-  ""
+    : ""
 }
     `;
 
@@ -458,7 +449,6 @@ ${
 
         const customerAddress =
           document.getElementById("customerAddress").value;
-          
 
         if (!customerName || !customerPhone || !customerAddress) {
           alert("Fill customer details");
@@ -471,10 +461,9 @@ ${
         }
         const customer_Name = prompt("Enter Your Name");
 
-  const customer_Phone = prompt("Enter Phone Number");
+        const customer_Phone = prompt("Enter Phone Number");
 
-  const customer_Address = prompt("Enter Delivery Address");
-        
+        const customer_Address = prompt("Enter Delivery Address");
 
         let total = cart.reduce((s, i) => s + i.price * i.qty, 0) * 100;
 
@@ -514,22 +503,20 @@ ${
             }
 
             await db.collection("orders").add({
+              customerName,
+              customerPhone,
+              customerAddress,
 
-  customerName,
-  customerPhone,
-  customerAddress,
+              items: cart,
 
-  items: cart,
+              total: total / 100,
 
-  total: total / 100,
+              user: firebase.auth().currentUser?.email || "guest",
 
-  user: firebase.auth().currentUser?.email || "guest",
+              paymentId: response.razorpay_payment_id,
 
-  paymentId: response.razorpay_payment_id,
-
-  createdAt: new Date(),
-
-});
+              createdAt: new Date(),
+            });
 
             alert("Order placed");
             cart = [];
