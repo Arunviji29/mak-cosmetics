@@ -93,6 +93,13 @@
 
       <div id="products" class="grid"></div>
       <h3>🛒 Cart</h3>
+      <h3>Customer Details</h3>
+
+      <input type="text" id="customerName" placeholder="Full Name" />
+
+      <input type="text" id="customerPhone" placeholder="Phone Number" />
+
+      <input type="text" id="customerAddress" placeholder="Address" />
       <div id="cart"></div>
       <button onclick="placeOrder()">Checkout</button>
     </div>
@@ -206,56 +213,51 @@
       }
 
       // CART
-      // CART
-  function addToCart(name, price) {
+      function addToCart(name, price) {
+        const existing = cart.find((i) => i.name === name);
 
-    const existing = cart.find(i => i.name === name);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          cart.push({
+            name,
+            price,
+            qty: 1,
+          });
+        }
 
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push({
-        name,
-        price,
-        qty: 1
-      });
-    }
+        renderCart();
+      }
 
-    renderCart();
-  }
+      function increaseQty(index) {
+        cart[index].qty++;
+        renderCart();
+      }
 
-  function increaseQty(index) {
-    cart[index].qty++;
-    renderCart();
-  }
+      function decreaseQty(index) {
+        if (cart[index].qty > 1) {
+          cart[index].qty--;
+        }
 
-  function decreaseQty(index) {
+        renderCart();
+      }
 
-    if (cart[index].qty > 1) {
-      cart[index].qty--;
-    }
+      function removeItem(index) {
+        cart.splice(index, 1);
+        renderCart();
+      }
 
-    renderCart();
-  }
+      function renderCart() {
+        const cartDiv = document.getElementById("cart");
 
-  function removeItem(index) {
-    cart.splice(index, 1);
-    renderCart();
-  }
+        cartDiv.innerHTML = "";
 
-  function renderCart() {
+        let total = 0;
 
-    const cartDiv = document.getElementById("cart");
+        cart.forEach((item, index) => {
+          total += item.price * item.qty;
 
-    cartDiv.innerHTML = "";
-
-    let total = 0;
-
-    cart.forEach((item, index) => {
-
-      total += item.price * item.qty;
-
-      cartDiv.innerHTML += `
+          cartDiv.innerHTML += `
         <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
           
           <h4>${item.name}</h4>
@@ -274,19 +276,31 @@
 
         </div>
       `;
-    });
+        });
 
-    cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
-  }
+        cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
+      }
       const BACKEND_URL = "https://mak-cosmetics.onrender.com";
       // PAYMENT
       async function placeOrder() {
+        const customerName = document.getElementById("customerName").value;
+
+        const customerPhone = document.getElementById("customerPhone").value;
+
+        const customerAddress =
+          document.getElementById("customerAddress").value;
+
+        if (!customerName || !customerPhone || !customerAddress) {
+          alert("Fill customer details");
+          return;
+        }
+
         if (cart.length === 0) {
           alert("Cart empty");
           return;
         }
 
-        let total = cart.reduce((s, i) => s + (i.price * i.qty), 0) * 100;
+        let total = cart.reduce((s, i) => s + i.price * i.qty, 0) * 100;
 
         const res = await fetch(`${BACKEND_URL}/create-order`, {
           method: "POST",
@@ -325,6 +339,9 @@
 
             await db.collection("orders").add({
               items: cart,
+              customerName,
+              customerPhone,
+              customerAddress,
               user: firebase.auth().currentUser?.email || "guest",
               createdAt: new Date(),
             });
