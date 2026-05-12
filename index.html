@@ -300,6 +300,27 @@
 
         input.click();
       }
+      async function deleteProduct(id) {
+
+  const user = firebase.auth().currentUser;
+
+  if (!user || user.email !== ADMIN_EMAIL) {
+    alert("Admin only");
+    return;
+  }
+
+  const ok = confirm("Delete product?");
+
+  if (!ok) return;
+
+  await db.collection("products")
+    .doc(id)
+    .delete();
+
+  alert("Deleted");
+
+  loadProducts();
+}
 
       // LOAD PRODUCTS
       async function loadProducts() {
@@ -327,7 +348,22 @@
       <img src="${p.image || "https://via.placeholder.com/150"}" />
       <h3>${p.name}</h3>
       <p>₹${p.price}</p>
-      <button onclick="addToCart('${p.name}', ${p.price})">Add</button>
+      <button onclick="addToCart('${p.name}', ${p.price})">
+  Add
+</button>
+
+${
+  firebase.auth().currentUser?.email === ADMIN_EMAIL
+  ?
+  `<button
+    onclick="deleteProduct('${doc.id}')"
+    style="background:red;margin-top:10px;"
+  >
+    Delete
+  </button>`
+  :
+  ""
+}
     `;
 
           container.appendChild(div);
