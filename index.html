@@ -275,6 +275,7 @@
         let name = prompt("Name");
         let price = prompt("Price");
         let category = prompt("Category");
+        let stock = prompt("Stock Quantity");
 
         let input = document.createElement("input");
         input.type = "file";
@@ -292,6 +293,7 @@
             price: Number(price),
             category,
             image: imageURL,
+            stock: Number(stock),
           });
 
           alert("Added");
@@ -348,9 +350,18 @@
       <img src="${p.image || "https://via.placeholder.com/150"}" />
       <h3>${p.name}</h3>
       <p>₹${p.price}</p>
-      <button onclick="addToCart('${p.name}', ${p.price})">
-  Add
-</button>
+
+<p>
+  ${
+    p.stock > 0
+    ? `In Stock (${p.stock})`
+    : `Out of Stock`
+  }
+</p>
+      <<button
+  onclick="addToCart('${p.name}', ${p.price})"
+  ${p.stock <= 0 ? "disabled" : ""}
+>
 
 ${
   firebase.auth().currentUser?.email === ADMIN_EMAIL
