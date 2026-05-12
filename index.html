@@ -98,33 +98,56 @@
       }
 
       .card {
-  background: white;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  transition: 0.3s;
-  text-align: center;
-}
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+        text-align: center;
+      }
 
-.card:hover {
-  transform: translateY(-5px);
-}
+      .card:hover {
+        transform: translateY(-5px);
+      }
 
-.card img {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
+      .card img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+      }
 
-.card h3 {
-  margin-top: 15px;
-}
+      .card h3 {
+        margin-top: 15px;
+      }
 
-.card p {
-  font-size: 18px;
-  font-weight: bold;
-  color: #ff2e7a;
-}
+      .card p {
+        font-size: 18px;
+        font-weight: bold;
+        color: #ff2e7a;
+      }
+      .whatsapp {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+
+        width: 60px;
+        height: 60px;
+
+        background: #25d366;
+        color: white;
+
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 30px;
+
+        text-decoration: none;
+
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
     </style>
   </head>
 
@@ -501,5 +524,8 @@
 
       loadProducts();
     </script>
+    <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
+      💬
+    </a>
   </body>
 </html>
