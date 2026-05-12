@@ -206,72 +206,78 @@
       }
 
       // CART
-      function addToCart(name, price) {
+      // CART
+  function addToCart(name, price) {
 
-  const existing = cart.find(i => i.name === name);
+    const existing = cart.find(i => i.name === name);
 
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    cart.push({
-      name,
-      price,
-      qty: 1
-    });
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      cart.push({
+        name,
+        price,
+        qty: 1
+      });
+    }
+
+    renderCart();
   }
 
   function increaseQty(index) {
-  cart[index].qty++;
-  renderCart();
-}
-
-function decreaseQty(index) {
-
-  if (cart[index].qty > 1) {
-    cart[index].qty--;
+    cart[index].qty++;
+    renderCart();
   }
 
-  renderCart();
-}
+  function decreaseQty(index) {
 
-function removeItem(index) {
-  cart.splice(index, 1);
-  renderCart();
-}
+    if (cart[index].qty > 1) {
+      cart[index].qty--;
+    }
 
-  renderCart();
-}
-      function renderCart() {
-  const cartDiv = document.getElementById("cart");
+    renderCart();
+  }
 
-  cartDiv.innerHTML = "";
+  function removeItem(index) {
+    cart.splice(index, 1);
+    renderCart();
+  }
 
-  let total = 0;
+  function renderCart() {
 
-  cart.forEach((item, index) => {
-    total += item.price * item.qty;
+    const cartDiv = document.getElementById("cart");
 
-    cartDiv.innerHTML += `
-      <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
-        <h4>${item.name}</h4>
+    cartDiv.innerHTML = "";
 
-        <button onclick="decreaseQty(${index})">-</button>
+    let total = 0;
 
-        <span style="margin:0 10px;">${item.qty}</span>
+    cart.forEach((item, index) => {
 
-        <button onclick="increaseQty(${index})">+</button>
+      total += item.price * item.qty;
 
-        <p>₹${item.price * item.qty}</p>
+      cartDiv.innerHTML += `
+        <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
+          
+          <h4>${item.name}</h4>
 
-        <button onclick="removeItem(${index})">
-          Remove
-        </button>
-      </div>
-    `;
-  });
+          <button onclick="decreaseQty(${index})">-</button>
 
-  cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
-}
+          <span style="margin:0 10px;">${item.qty}</span>
+
+          <button onclick="increaseQty(${index})">+</button>
+
+          <p>₹${item.price * item.qty}</p>
+
+          <button onclick="removeItem(${index})">
+            Remove
+          </button>
+
+        </div>
+      `;
+    });
+
+    cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
+  }
       const BACKEND_URL = "https://mak-cosmetics.onrender.com";
       // PAYMENT
       async function placeOrder() {
