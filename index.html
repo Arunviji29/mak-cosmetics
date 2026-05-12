@@ -207,29 +207,71 @@
 
       // CART
       function addToCart(name, price) {
-        cart.push({ name, price });
 
-        renderCart();
+  const existing = cart.find(i => i.name === name);
 
-        alert(name + " added");
-      }
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      name,
+      price,
+      qty: 1
+    });
+  }
+
+  function increaseQty(index) {
+  cart[index].qty++;
+  renderCart();
+}
+
+function decreaseQty(index) {
+
+  if (cart[index].qty > 1) {
+    cart[index].qty--;
+  }
+
+  renderCart();
+}
+
+function removeItem(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+  renderCart();
+}
       function renderCart() {
-        const cartDiv = document.getElementById("cart");
+  const cartDiv = document.getElementById("cart");
 
-        cartDiv.innerHTML = "";
+  cartDiv.innerHTML = "";
 
-        let total = 0;
+  let total = 0;
 
-        cart.forEach((item) => {
-          total += item.price;
+  cart.forEach((item, index) => {
+    total += item.price * item.qty;
 
-          cartDiv.innerHTML += `
-      <p>${item.name} - ₹${item.price}</p>
+    cartDiv.innerHTML += `
+      <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
+        <h4>${item.name}</h4>
+
+        <button onclick="decreaseQty(${index})">-</button>
+
+        <span style="margin:0 10px;">${item.qty}</span>
+
+        <button onclick="increaseQty(${index})">+</button>
+
+        <p>₹${item.price * item.qty}</p>
+
+        <button onclick="removeItem(${index})">
+          Remove
+        </button>
+      </div>
     `;
-        });
+  });
 
-        cartDiv.innerHTML += `<h4>Total: ₹${total}</h4>`;
-      }
+  cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
+}
       const BACKEND_URL = "https://mak-cosmetics.onrender.com";
       // PAYMENT
       async function placeOrder() {
@@ -238,7 +280,7 @@
           return;
         }
 
-        let total = cart.reduce((s, i) => s + i.price, 0) * 100;
+        let total = cart.reduce((s, i) => s + (i.price * i.qty), 0) * 100;
 
         const res = await fetch(`${BACKEND_URL}/create-order`, {
           method: "POST",
