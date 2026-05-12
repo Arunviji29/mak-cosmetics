@@ -540,7 +540,14 @@ ${
 
 }
 
-            alert("Order placed");
+            alert(
+  "✅ Order Successful!\n\n" +
+  "Thank you for shopping with MAK Cosmetics 💖"
+);
+window.scrollTo({
+  top: 0,
+  behavior: "smooth"
+});
             cart = [];
             renderCart();
           },
