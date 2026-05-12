@@ -148,6 +148,27 @@
 
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
+      #loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: white;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+
+  font-size: 24px;
+  font-weight: bold;
+
+  color: #ff2e7a;
+}
     </style>
   </head>
 
@@ -225,6 +246,9 @@
     <button onclick="viewOrders()">View Orders</button>
 
     <div id="orders"></div>
+    <div id="loader">
+  Loading Products...
+</div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -324,6 +348,7 @@
       // LOAD PRODUCTS
       async function loadProducts() {
         const container = document.getElementById("products");
+        document.getElementById("loader").style.display = "flex";
         container.innerHTML = "";
 
         const search = document.getElementById("search").value.toLowerCase();
@@ -370,6 +395,7 @@ ${
 
           container.appendChild(div);
         });
+        document.getElementById("loader").style.display = "none";
       }
 
       // CART
