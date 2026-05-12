@@ -518,6 +518,28 @@ ${
               createdAt: new Date(),
             });
 
+            for (const item of cart) {
+
+  const snap = await db.collection("products")
+    .where("name", "==", item.name)
+    .get();
+
+  snap.forEach(async (doc) => {
+
+    const product = doc.data();
+
+    await db.collection("products")
+      .doc(doc.id)
+      .update({
+
+        stock: product.stock - item.qty
+
+      });
+
+  });
+
+}
+
             alert("Order placed");
             cart = [];
             renderCart();
