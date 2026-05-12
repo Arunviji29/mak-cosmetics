@@ -21,56 +21,54 @@
       }
 
       .hero {
-  background: linear-gradient(
-    rgba(255,46,122,0.7),
-    rgba(255,46,122,0.7)
-  ),
-  url("https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200");
+        background:
+          linear-gradient(rgba(255, 46, 122, 0.7), rgba(255, 46, 122, 0.7)),
+          url("https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200");
 
-  background-size: cover;
-  background-position: center;
+        background-size: cover;
+        background-position: center;
 
-  color: white;
+        color: white;
 
-  text-align: center;
+        text-align: center;
 
-  padding: 80px 20px;
-}
+        padding: 80px 20px;
+      }
 
-.hero h1 {
-  font-size: 45px;
-  margin-bottom: 10px;
-}
+      .hero h1 {
+        font-size: 45px;
+        margin-bottom: 10px;
+      }
 
-.hero p {
-  font-size: 20px;
-}
+      .hero p {
+        font-size: 20px;
+      }
 
-.categories {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  overflow-x: auto;
-}
+      .categories {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        overflow-x: auto;
+      }
 
-.category-card {
-  min-width: 250px;
-  background: white;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  text-align: center;
-}
+      .category-card {
+        min-width: 250px;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-.category-card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
+      .category-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
 
-.category-card h3 {
-  padding: 15px;
-}
+      .category-card h3 {
+        padding: 15px;
+      }
 
       .container {
         padding: 20px;
@@ -124,33 +122,33 @@
         <button onclick="logout()">Logout</button>
       </div>
     </header>
-<div class="hero">
+    <div class="hero">
+      <h1>Glow With MAK Cosmetics ✨</h1>
 
-  <h1>Glow With MAK Cosmetics ✨</h1>
+      <p>Makeup • Skincare • Haircare</p>
+      <div class="categories">
+        <div class="category-card">
+          <img
+            src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=500"
+          />
+          <h3>Makeup</h3>
+        </div>
 
-  <p>
-    Makeup • Skincare • Haircare
-  </p>
-  <div class="categories">
+        <div class="category-card">
+          <img
+            src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=500"
+          />
+          <h3>Skincare</h3>
+        </div>
 
-  <div class="category-card">
-    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=500">
-    <h3>Makeup</h3>
-  </div>
-
-  <div class="category-card">
-    <img src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=500">
-    <h3>Skincare</h3>
-  </div>
-
-  <div class="category-card">
-    <img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?q=80&w=500">
-    <h3>Haircare</h3>
-  </div>
-
-</div>
-
-</div>
+        <div class="category-card">
+          <img
+            src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?q=80&w=500"
+          />
+          <h3>Haircare</h3>
+        </div>
+      </div>
+    </div>
     <div class="container">
       <input
         type="text"
@@ -182,16 +180,14 @@
       <button onclick="placeOrder()">Checkout</button>
     </div>
     <h3>🛒 Cart</h3>
-<div id="cart"></div>
-<button onclick="placeOrder()">Checkout</button>
+    <div id="cart"></div>
+    <button onclick="placeOrder()">Checkout</button>
 
-<h3>📦 Orders</h3>
+    <h3>📦 Orders</h3>
 
-<button onclick="viewOrders()">
-  View Orders
-</button>
+    <button onclick="viewOrders()">View Orders</button>
 
-<div id="orders"></div>
+    <div id="orders"></div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -447,27 +443,26 @@
       loadProducts();
 
       async function viewOrders() {
+        const user = firebase.auth().currentUser;
 
-  const user = firebase.auth().currentUser;
+        if (!user || user.email !== ADMIN_EMAIL) {
+          alert("Admin only");
+          return;
+        }
 
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("Admin only");
-    return;
-  }
+        const ordersDiv = document.getElementById("orders");
 
-  const ordersDiv = document.getElementById("orders");
+        ordersDiv.innerHTML = "";
 
-  ordersDiv.innerHTML = "";
+        const snap = await db
+          .collection("orders")
+          .orderBy("createdAt", "desc")
+          .get();
 
-  const snap = await db.collection("orders")
-    .orderBy("createdAt", "desc")
-    .get();
+        snap.forEach((doc) => {
+          const o = doc.data();
 
-  snap.forEach(doc => {
-
-    const o = doc.data();
-
-    ordersDiv.innerHTML += `
+          ordersDiv.innerHTML += `
       <div style="
         background:white;
         padding:15px;
@@ -482,17 +477,15 @@
         <p>${o.customerAddress}</p>
 
         <p>
-          ${o.items.map(i =>
-            `${i.name} x ${i.qty}`
-          ).join("<br>")}
+          ${o.items.map((i) => `${i.name} x ${i.qty}`).join("<br>")}
         </p>
 
       </div>
     `;
-  });
-}
+        });
+      }
 
-loadProducts();
+      loadProducts();
     </script>
   </body>
 </html>
