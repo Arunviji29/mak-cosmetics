@@ -149,44 +149,44 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
       .dark {
-  background: #111;
-  color: white;
-}
+        background: #111;
+        color: white;
+      }
 
-.dark .card,
-.dark .category-card,
-.dark #cart div {
-  background: #1e1e1e;
-  color: white;
-}
+      .dark .card,
+      .dark .category-card,
+      .dark #cart div {
+        background: #1e1e1e;
+        color: white;
+      }
 
-.dark input,
-.dark select {
-  background: #222;
-  color: white;
-  border: 1px solid #444;
-}
+      .dark input,
+      .dark select {
+        background: #222;
+        color: white;
+        border: 1px solid #444;
+      }
       #loader {
-  position: fixed;
-  top: 0;
-  left: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
 
-  width: 100%;
-  height: 100%;
+        width: 100%;
+        height: 100%;
 
-  background: white;
+        background: white;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
 
-  z-index: 9999;
+        z-index: 9999;
 
-  font-size: 24px;
-  font-weight: bold;
+        font-size: 24px;
+        font-weight: bold;
 
-  color: #ff2e7a;
-}
+        color: #ff2e7a;
+      }
     </style>
   </head>
 
@@ -197,11 +197,9 @@
         <button onclick="login()">Login</button>
         <button onclick="logout()">Logout</button>
         <button onclick="toggleDarkMode()">
-          <button onclick="loadOrders()">
-  Orders
-</button>
-  🌙
-</button>
+          <button onclick="loadOrders()">Orders</button>
+          🌙
+        </button>
       </div>
     </header>
     <div class="hero">
@@ -271,9 +269,7 @@
     <button onclick="viewOrders()">View Orders</button>
 
     <div id="orders"></div>
-    <div id="loader">
-  Loading Products...
-</div>
+    <div id="loader">Loading Products...</div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -370,6 +366,48 @@
 
         loadProducts();
       }
+      async function editProduct(
+  id,
+  oldName,
+  oldPrice,
+  oldCategory,
+  oldStock
+) {
+
+  const user = firebase.auth().currentUser;
+
+  if (!user || user.email !== ADMIN_EMAIL) {
+    alert("Admin only");
+    return;
+  }
+
+  const name =
+    prompt("Product Name", oldName);
+
+  const price =
+    prompt("Price", oldPrice);
+
+  const category =
+    prompt("Category", oldCategory);
+
+  const stock =
+    prompt("Stock", oldStock);
+
+  await db.collection("products")
+    .doc(id)
+    .update({
+
+      name,
+      price: Number(price),
+      category,
+      stock: Number(stock)
+
+    });
+
+  alert("Product Updated");
+
+  loadProducts();
+}
 
       // LOAD PRODUCTS
       async function loadProducts() {
@@ -408,8 +446,20 @@
 >
 
 ${
-  firebase.auth().currentUser?.email === ADMIN_EMAIL
-    ? `<button
+  firebase.auth().currentUser?.email === ADMIN_EMAIL? `
+  <button
+  onclick="editProduct(
+    '${doc.id}',
+    '${p.name}',
+    '${p.price}',
+    '${p.category}',
+    '${p.stock}'
+  )"
+  style="margin-top:10px;"
+>
+  Edit
+</button>  
+  <button
     onclick="deleteProduct('${doc.id}')"
     style="background:red;margin-top:10px;"
   >
@@ -571,35 +621,31 @@ ${
             });
 
             for (const item of cart) {
+              const snap = await db
+                .collection("products")
+                .where("name", "==", item.name)
+                .get();
 
-  const snap = await db.collection("products")
-    .where("name", "==", item.name)
-    .get();
+              snap.forEach(async (doc) => {
+                const product = doc.data();
 
-  snap.forEach(async (doc) => {
-
-    const product = doc.data();
-
-    await db.collection("products")
-      .doc(doc.id)
-      .update({
-
-        stock: product.stock - item.qty
-
-      });
-
-  });
-
-}
+                await db
+                  .collection("products")
+                  .doc(doc.id)
+                  .update({
+                    stock: product.stock - item.qty,
+                  });
+              });
+            }
 
             alert(
-  "✅ Order Successful!\n\n" +
-  "Thank you for shopping with MAK Cosmetics 💖"
-);
-window.scrollTo({
-  top: 0,
-  behavior: "smooth"
-});
+              "✅ Order Successful!\n\n" +
+                "Thank you for shopping with MAK Cosmetics 💖",
+            );
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
             cart = [];
             renderCart();
           },
@@ -652,53 +698,49 @@ window.scrollTo({
     `;
         });
       }
-function toggleDarkMode() {
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+      }
+      async function loadOrders() {
+        const user = firebase.auth().currentUser;
 
-  document.body.classList.toggle("dark");
+        if (!user || user.email !== ADMIN_EMAIL) {
+          alert("Admin only");
+          return;
+        }
 
-}
-async function loadOrders() {
+        const ordersDiv = document.getElementById("orders");
 
-  const user = firebase.auth().currentUser;
+        if (showingOrders) {
+          ordersDiv.innerHTML = "";
+          showingOrders = false;
+          return;
+        }
 
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("Admin only");
-    return;
-  }
+        ordersDiv.innerHTML = "<h2>Loading Orders...</h2>";
 
-  const ordersDiv = document.getElementById("orders");
+        const snap = await db
+          .collection("orders")
+          .orderBy("createdAt", "desc")
+          .get();
 
-  if (showingOrders) {
-    ordersDiv.innerHTML = "";
-    showingOrders = false;
-    return;
-  }
+        ordersDiv.innerHTML = "<h2>Customer Orders</h2>";
 
-  ordersDiv.innerHTML = "<h2>Loading Orders...</h2>";
+        snap.forEach((doc) => {
+          const order = doc.data();
 
-  const snap = await db.collection("orders")
-    .orderBy("createdAt", "desc")
-    .get();
+          let itemsHTML = "";
 
-  ordersDiv.innerHTML = "<h2>Customer Orders</h2>";
-
-  snap.forEach((doc) => {
-
-    const order = doc.data();
-
-    let itemsHTML = "";
-
-    order.items.forEach((item) => {
-
-      itemsHTML += `
+          order.items.forEach((item) => {
+            itemsHTML += `
         <p>
           ${item.name}
           x ${item.qty}
         </p>
       `;
-    });
+          });
 
-    ordersDiv.innerHTML += `
+          ordersDiv.innerHTML += `
 
       <div style="
         background:white;
@@ -724,10 +766,10 @@ async function loadOrders() {
       </div>
 
     `;
-  });
+        });
 
-  showingOrders = true;
-}
+        showingOrders = true;
+      }
       loadProducts();
     </script>
     <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
