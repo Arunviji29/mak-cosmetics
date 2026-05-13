@@ -148,6 +148,24 @@
 
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
+      .dark {
+  background: #111;
+  color: white;
+}
+
+.dark .card,
+.dark .category-card,
+.dark #cart div {
+  background: #1e1e1e;
+  color: white;
+}
+
+.dark input,
+.dark select {
+  background: #222;
+  color: white;
+  border: 1px solid #444;
+}
       #loader {
   position: fixed;
   top: 0;
@@ -178,6 +196,9 @@
       <div>
         <button onclick="login()">Login</button>
         <button onclick="logout()">Logout</button>
+        <button onclick="toggleDarkMode()">
+  🌙
+</button>
       </div>
     </header>
     <div class="hero">
@@ -626,7 +647,11 @@ window.scrollTo({
     `;
         });
       }
+function toggleDarkMode() {
 
+  document.body.classList.toggle("dark");
+
+}
       loadProducts();
     </script>
     <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
