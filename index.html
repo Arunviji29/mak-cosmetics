@@ -115,6 +115,9 @@
         height: 220px;
         object-fit: cover;
       }
+      .card img:hover {
+  transform: scale(1.05);
+}
 
       .card h3 {
         margin-top: 15px;
@@ -427,7 +430,10 @@
           div.className = "card";
 
           div.innerHTML = `
-            <img src="${p.image || "https://via.placeholder.com/150"}" />
+            <img
+  src="${p.image || "https://via.placeholder.com/150"}"
+  onclick="window.open('${p.image}', '_blank')"
+/>
             <h3>${p.name}</h3>
             <p>₹${p.price}</p>
 
