@@ -79,7 +79,7 @@
         padding: 10px;
         margin: 10px 5px;
         border-radius: 6px;
-        border: 1px solid #ccc;
+        border: 1px solid #d355d3;
       }
 
       button {
@@ -214,7 +214,7 @@
     <div class="hero">
       <h1>Glow With MAK Cosmetics ✨</h1>
 
-      <p>Makeup • Skincare • Haircare</p>
+      <p>Makeup • Skincare • Haircare • Jewelry</p>
       <div class="categories">
         <div class="category-card">
           <img
@@ -222,20 +222,28 @@
           />
           <h3>Makeup</h3>
         </div>
-
         <div class="category-card">
           <img
-            src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=500"
+            src="https://tse1.mm.bing.net/th/id/OIP.UvXDzGL4oejYJlIA5vG0DAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3"
           />
           <h3>Skincare</h3>
         </div>
-
-        <div class="category-card">
+         <div class="category-card">
           <img
-            src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?q=80&w=500"
+            src="https://th.bing.com/th/id/OIP.wkqB6VbtVmuY1T0BoHI0vQHaE7?w=305&h=203&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3"
           />
           <h3>Haircare</h3>
         </div>
+
+        <div class="category-card">
+          <img
+            src="https://cdn.pixabay.com/photo/2024/03/27/19/39/ai-generated-8659741_1280.jpg"
+          />
+          <h3>Jewelry</h3>
+        </div>
+
+       
+        
       </div>
     </div>
     <div class="container">
@@ -251,6 +259,7 @@
         <option value="makeup">Makeup</option>
         <option value="skincare">Skincare</option>
         <option value="hair">Hair</option>
+        <option value="jewelry">Jewelry</option>
       </select>
 
       <button onclick="addProduct()">Add Product</button>
@@ -267,17 +276,11 @@
       <input type="text" id="customerAddress" placeholder="Address" />
       <h3>Track Your Order</h3>
 
-<input
-  type="text"
-  id="trackOrderId"
-  placeholder="Enter Order ID"
-/>
+      <input type="text" id="trackOrderId" placeholder="Enter Order ID" />
 
-<button onclick="trackOrder()">
-  Track Order
-</button>
+      <button onclick="trackOrder()">Track Order</button>
 
-<div id="trackingResult"></div>
+      <div id="trackingResult"></div>
       <div id="cart"></div>
       <div id="orders"></div>
       <button onclick="placeOrder()">Checkout</button>
@@ -802,41 +805,36 @@
         showingOrders = true;
       }
       async function trackOrder() {
+        const orderId = document.getElementById("trackOrderId").value;
 
-  const orderId =
-    document.getElementById("trackOrderId").value;
+        if (!orderId) {
+          alert("Enter Order ID");
+          return;
+        }
 
-  if (!orderId) {
-    alert("Enter Order ID");
-    return;
-  }
+        const resultDiv = document.getElementById("trackingResult");
 
-  const resultDiv =
-    document.getElementById("trackingResult");
+        resultDiv.innerHTML = "Searching...";
 
-  resultDiv.innerHTML = "Searching...";
+        const snap = await db
+          .collection("orders")
+          .where("orderId", "==", orderId)
+          .get();
 
-  const snap = await db
-    .collection("orders")
-    .where("orderId", "==", orderId)
-    .get();
-
-  if (snap.empty) {
-
-    resultDiv.innerHTML = `
+        if (snap.empty) {
+          resultDiv.innerHTML = `
       <p>
         ❌ Order Not Found
       </p>
     `;
 
-    return;
-  }
+          return;
+        }
 
-  snap.forEach((doc) => {
+        snap.forEach((doc) => {
+          const order = doc.data();
 
-    const order = doc.data();
-
-    resultDiv.innerHTML = `
+          resultDiv.innerHTML = `
 
       <div style="
         background:white;
@@ -872,8 +870,8 @@
       </div>
 
     `;
-  });
-}
+        });
+      }
 
       loadProducts();
     </script>
