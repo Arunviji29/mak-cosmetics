@@ -281,496 +281,525 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyAK7fgo0x1wh3bVB8WTGjlKN7M3lUmdn_k",
-        authDomain: "makcosmetics-19118.firebaseapp.com",
-        projectId: "makcosmetics-19118",
-        storageBucket: "makcosmetics-19118.firebasestorage.app",
-        messagingSenderId: "770446803728",
-        appId: "1:770446803728:web:b4490b0441080298c0db95",
-      };
+            const firebaseConfig = {
+              apiKey: "AIzaSyAK7fgo0x1wh3bVB8WTGjlKN7M3lUmdn_k",
+              authDomain: "makcosmetics-19118.firebaseapp.com",
+              projectId: "makcosmetics-19118",
+              storageBucket: "makcosmetics-19118.firebasestorage.app",
+              messagingSenderId: "770446803728",
+              appId: "1:770446803728:web:b4490b0441080298c0db95",
+            };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const storage = firebase.storage();
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const storage = firebase.storage();
 
-      let cart = [];
-      const ADMIN_EMAIL = "makcosmeticshop@gmail.com";
-      let showingOrders = false;
+            let cart = [];
+            const ADMIN_EMAIL = "makcosmeticshop@gmail.com";
+            let showingOrders = false;
 
-      // AUTH
-      async function login() {
-        let email = prompt("Email");
-        let pass = prompt("Password");
-        await firebase.auth().signInWithEmailAndPassword(email, pass);
-        alert("Login success");
-      }
+            // AUTH
+            async function login() {
+              let email = prompt("Email");
+              let pass = prompt("Password");
+              await firebase.auth().signInWithEmailAndPassword(email, pass);
+              alert("Login success");
+            }
 
-      function logout() {
-        firebase.auth().signOut();
-      }
+            function logout() {
+              firebase.auth().signOut();
+            }
 
-      // ADD PRODUCT
-      async function addProduct() {
+            // ADD PRODUCT
+            async function addProduct() {
+              const user = firebase.auth().currentUser;
+              if (!user || user.email !== ADMIN_EMAIL) {
+                alert("Admin only");
+                return;
+              }
+
+              let name = prompt("Name");
+              let price = prompt("Price");
+              let category = prompt("Category");
+              let stock = prompt("Stock Quantity");
+
+              let input = document.createElement("input");
+              input.type = "file";
+
+              input.onchange = async (e) => {
+                let file = e.target.files[0];
+
+                const ref = storage.ref("products/" + file.name);
+                await ref.put(file);
+
+                const imageURL = await ref.getDownloadURL();
+
+                await db.collection("products").add({
+                  name,
+                  price: Number(price),
+                  category,
+                  image: imageURL,
+                  stock: Number(stock),
+                });
+
+                alert("Added");
+                loadProducts();
+              };
+
+              input.click();
+            }
+            async function deleteProduct(id) {
+              const user = firebase.auth().currentUser;
+
+              if (!user || user.email !== ADMIN_EMAIL) {
+                alert("Admin only");
+                return;
+              }
+
+              const ok = confirm("Delete product?");
+
+              if (!ok) return;
+
+              await db.collection("products").doc(id).delete();
+
+              alert("Deleted");
+
+              loadProducts();
+            }
+            async function editProduct(
+        id,
+        oldName,
+        oldPrice,
+        oldCategory,
+        oldStock
+      ) {
+
         const user = firebase.auth().currentUser;
+
         if (!user || user.email !== ADMIN_EMAIL) {
           alert("Admin only");
           return;
         }
 
-        let name = prompt("Name");
-        let price = prompt("Price");
-        let category = prompt("Category");
-        let stock = prompt("Stock Quantity");
+        const name =
+          prompt("Product Name", oldName);
 
-        let input = document.createElement("input");
-        input.type = "file";
+        const price =
+          prompt("Price", oldPrice);
 
-        input.onchange = async (e) => {
-          let file = e.target.files[0];
+        const category =
+          prompt("Category", oldCategory);
 
-          const ref = storage.ref("products/" + file.name);
-          await ref.put(file);
+        const stock =
+          prompt("Stock", oldStock);
 
-          const imageURL = await ref.getDownloadURL();
+        await db.collection("products")
+          .doc(id)
+          .update({
 
-          await db.collection("products").add({
             name,
             price: Number(price),
             category,
-            image: imageURL,
-            stock: Number(stock),
+            stock: Number(stock)
+
           });
 
-          alert("Added");
-          loadProducts();
-        };
-
-        input.click();
-      }
-      async function deleteProduct(id) {
-        const user = firebase.auth().currentUser;
-
-        if (!user || user.email !== ADMIN_EMAIL) {
-          alert("Admin only");
-          return;
-        }
-
-        const ok = confirm("Delete product?");
-
-        if (!ok) return;
-
-        await db.collection("products").doc(id).delete();
-
-        alert("Deleted");
+        alert("Product Updated");
 
         loadProducts();
       }
-      async function editProduct(
-  id,
-  oldName,
-  oldPrice,
-  oldCategory,
-  oldStock
-) {
 
-  const user = firebase.auth().currentUser;
+            // LOAD PRODUCTS
+            async function loadProducts() {
+              const container = document.getElementById("products");
+              document.getElementById("loader").style.display = "flex";
+              container.innerHTML = "";
 
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("Admin only");
-    return;
-  }
+              const search = document.getElementById("search").value.toLowerCase();
+              const category = document.getElementById("category").value;
 
-  const name =
-    prompt("Product Name", oldName);
+              const snap = await db.collection("products").get();
 
-  const price =
-    prompt("Price", oldPrice);
+              snap.forEach((doc) => {
+                let p = doc.data();
 
-  const category =
-    prompt("Category", oldCategory);
+                if (
+                  (search && !p.name.toLowerCase().includes(search)) ||
+                  (category && p.category !== category)
+                )
+                  return;
 
-  const stock =
-    prompt("Stock", oldStock);
+                let div = document.createElement("div");
+                div.className = "card";
 
-  await db.collection("products")
-    .doc(id)
-    .update({
+                div.innerHTML = `
+            <img src="${p.image || "https://via.placeholder.com/150"}" />
+            <h3>${p.name}</h3>
+            <p>₹${p.price}</p>
 
-      name,
-      price: Number(price),
-      category,
-      stock: Number(stock)
+      <p>
+        ${p.stock > 0 ? `In Stock (${p.stock})` : `Out of Stock`}
+      </p>
+            <<button
+        onclick="addToCart('${p.name}', ${p.price})"
+        ${p.stock <= 0 ? "disabled" : ""}
+      >
 
-    });
-
-  alert("Product Updated");
-
-  loadProducts();
-}
-
-      // LOAD PRODUCTS
-      async function loadProducts() {
-        const container = document.getElementById("products");
-        document.getElementById("loader").style.display = "flex";
-        container.innerHTML = "";
-
-        const search = document.getElementById("search").value.toLowerCase();
-        const category = document.getElementById("category").value;
-
-        const snap = await db.collection("products").get();
-
-        snap.forEach((doc) => {
-          let p = doc.data();
-
-          if (
-            (search && !p.name.toLowerCase().includes(search)) ||
-            (category && p.category !== category)
-          )
-            return;
-
-          let div = document.createElement("div");
-          div.className = "card";
-
-          div.innerHTML = `
-      <img src="${p.image || "https://via.placeholder.com/150"}" />
-      <h3>${p.name}</h3>
-      <p>₹${p.price}</p>
-
-<p>
-  ${p.stock > 0 ? `In Stock (${p.stock})` : `Out of Stock`}
-</p>
-      <<button
-  onclick="addToCart('${p.name}', ${p.price})"
-  ${p.stock <= 0 ? "disabled" : ""}
->
-
-${
-  firebase.auth().currentUser?.email === ADMIN_EMAIL? `
-  <button
-  onclick="editProduct(
-    '${doc.id}',
-    '${p.name}',
-    '${p.price}',
-    '${p.category}',
-    '${p.stock}'
-  )"
-  style="margin-top:10px;"
->
-  Edit
-</button>  
-  <button
-    onclick="deleteProduct('${doc.id}')"
-    style="background:red;margin-top:10px;"
-  >
-    Delete
-  </button>`
-    : ""
-}
-    `;
-
-          container.appendChild(div);
-        });
-        document.getElementById("loader").style.display = "none";
+      ${
+        firebase.auth().currentUser?.email === ADMIN_EMAIL? `
+        <button
+        onclick="editProduct(
+          '${doc.id}',
+          '${p.name}',
+          '${p.price}',
+          '${p.category}',
+          '${p.stock}'
+        )"
+        style="margin-top:10px;"
+      >
+        Edit
+      </button>
+        <button
+          onclick="deleteProduct('${doc.id}')"
+          style="background:red;margin-top:10px;"
+        >
+          Delete
+        </button>`
+          : ""
       }
+          `;
 
-      // CART
-      function addToCart(name, price) {
-        const existing = cart.find((i) => i.name === name);
-
-        if (existing) {
-          existing.qty += 1;
-        } else {
-          cart.push({
-            name,
-            price,
-            qty: 1,
-          });
-        }
-
-        renderCart();
-      }
-
-      function increaseQty(index) {
-        cart[index].qty++;
-        renderCart();
-      }
-
-      function decreaseQty(index) {
-        if (cart[index].qty > 1) {
-          cart[index].qty--;
-        }
-
-        renderCart();
-      }
-
-      function removeItem(index) {
-        cart.splice(index, 1);
-        renderCart();
-      }
-
-      function renderCart() {
-        const cartDiv = document.getElementById("cart");
-
-        cartDiv.innerHTML = "";
-
-        let total = 0;
-
-        cart.forEach((item, index) => {
-          total += item.price * item.qty;
-
-          cartDiv.innerHTML += `
-        <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
-          
-          <h4>${item.name}</h4>
-
-          <button onclick="decreaseQty(${index})">-</button>
-
-          <span style="margin:0 10px;">${item.qty}</span>
-
-          <button onclick="increaseQty(${index})">+</button>
-
-          <p>₹${item.price * item.qty}</p>
-
-          <button onclick="removeItem(${index})">
-            Remove
-          </button>
-
-        </div>
-      `;
-        });
-
-        cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
-      }
-      const BACKEND_URL = "https://mak-cosmetics.onrender.com";
-      // PAYMENT
-      async function placeOrder() {
-        const customerName = document.getElementById("customerName").value;
-
-        const customerPhone = document.getElementById("customerPhone").value;
-
-        const customerAddress =
-          document.getElementById("customerAddress").value;
-
-        if (!customerName || !customerPhone || !customerAddress) {
-          alert("Fill customer details");
-          return;
-        }
-
-        if (cart.length === 0) {
-          alert("Cart empty");
-          return;
-        }
-        const customer_Name = prompt("Enter Your Name");
-
-        const customer_Phone = prompt("Enter Phone Number");
-
-        const customer_Address = prompt("Enter Delivery Address");
-
-        let total = cart.reduce((s, i) => s + i.price * i.qty, 0) * 100;
-
-        const res = await fetch(`${BACKEND_URL}/create-order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: total }),
-        });
-
-        const order = await res.json();
-
-        var options = {
-          key: "rzp_test_SlI1qCPtzNiIzm",
-          amount: order.amount,
-          currency: "INR",
-          order_id: order.id,
-
-          method: {
-            upi: true,
-            card: true,
-            netbanking: true,
-            wallet: true,
-          },
-
-          handler: async function (response) {
-            const verify = await fetch(`${BACKEND_URL}/verify-payment`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
-            });
-
-            const result = await verify.json();
-
-            if (result.status !== "success") {
-              alert("Payment failed");
-              return;
+                container.appendChild(div);
+              });
+              document.getElementById("loader").style.display = "none";
             }
 
-            await db.collection("orders").add({
-              customerName,
-              customerPhone,
-              customerAddress,
+            // CART
+            function addToCart(name, price) {
+              const existing = cart.find((i) => i.name === name);
 
-              items: cart,
+              if (existing) {
+                existing.qty += 1;
+              } else {
+                cart.push({
+                  name,
+                  price,
+                  qty: 1,
+                });
+              }
 
-              total: total / 100,
+              renderCart();
+            }
 
-              user: firebase.auth().currentUser?.email || "guest",
+            function increaseQty(index) {
+              cart[index].qty++;
+              renderCart();
+            }
 
-              paymentId: response.razorpay_payment_id,
+            function decreaseQty(index) {
+              if (cart[index].qty > 1) {
+                cart[index].qty--;
+              }
 
-              createdAt: new Date(),
-            });
+              renderCart();
+            }
 
-            for (const item of cart) {
+            function removeItem(index) {
+              cart.splice(index, 1);
+              renderCart();
+            }
+
+            function renderCart() {
+              const cartDiv = document.getElementById("cart");
+
+              cartDiv.innerHTML = "";
+
+              let total = 0;
+
+              cart.forEach((item, index) => {
+                total += item.price * item.qty;
+
+                cartDiv.innerHTML += `
+              <div style="background:white;padding:10px;margin:10px 0;border-radius:10px;">
+
+                <h4>${item.name}</h4>
+
+                <button onclick="decreaseQty(${index})">-</button>
+
+                <span style="margin:0 10px;">${item.qty}</span>
+
+                <button onclick="increaseQty(${index})">+</button>
+
+                <p>₹${item.price * item.qty}</p>
+
+                <button onclick="removeItem(${index})">
+                  Remove
+                </button>
+
+              </div>
+            `;
+              });
+
+              cartDiv.innerHTML += `<h3>Total: ₹${total}</h3>`;
+            }
+            const BACKEND_URL = "https://mak-cosmetics.onrender.com";
+            // PAYMENT
+            async function placeOrder() {
+              const customerName = document.getElementById("customerName").value;
+
+              const customerPhone = document.getElementById("customerPhone").value;
+
+              const customerAddress =
+                document.getElementById("customerAddress").value;
+
+              if (!customerName || !customerPhone || !customerAddress) {
+                alert("Fill customer details");
+                return;
+              }
+
+              if (cart.length === 0) {
+                alert("Cart empty");
+                return;
+              }
+              const customer_Name = prompt("Enter Your Name");
+
+              const customer_Phone = prompt("Enter Phone Number");
+
+              const customer_Address = prompt("Enter Delivery Address");
+
+              let total = cart.reduce((s, i) => s + i.price * i.qty, 0) * 100;
+
+              const res = await fetch(`${BACKEND_URL}/create-order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: total }),
+              });
+
+              const order = await res.json();
+
+              var options = {
+                key: "rzp_test_SlI1qCPtzNiIzm",
+                amount: order.amount,
+                currency: "INR",
+                order_id: order.id,
+
+                method: {
+                  upi: true,
+                  card: true,
+                  netbanking: true,
+                  wallet: true,
+                },
+
+                handler: async function (response) {
+                  const verify = await fetch(`${BACKEND_URL}/verify-payment`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(response),
+                  });
+
+                  const result = await verify.json();
+
+                  if (result.status !== "success") {
+                    alert("Payment failed");
+                    return;
+                  }
+
+                  await db.collection("orders").add({
+                    customerName,
+                    customerPhone,
+                    customerAddress,
+
+                    items: cart,
+
+                    total: total / 100,
+
+                    user: firebase.auth().currentUser?.email || "guest",
+
+                    paymentId: response.razorpay_payment_id,
+
+                    createdAt: new Date(),
+                  });
+
+                  for (const item of cart) {
+                    const snap = await db
+                      .collection("products")
+                      .where("name", "==", item.name)
+                      .get();
+
+                    snap.forEach(async (doc) => {
+                      const product = doc.data();
+
+                      await db
+                        .collection("products")
+                        .doc(doc.id)
+                        .update({
+                          stock: product.stock - item.qty,
+                        });
+                    });
+                  }
+
+                  alert(
+                    "✅ Order Successful!\n\n" +
+                      "Thank you for shopping with MAK Cosmetics 💖",
+                  );
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                  cart = [];
+                  renderCart();
+                },
+              };
+
+              new Razorpay(options).open();
+            }
+
+            loadProducts();
+
+            async function viewOrders() {
+              const user = firebase.auth().currentUser;
+
+              if (!user || user.email !== ADMIN_EMAIL) {
+                alert("Admin only");
+                return;
+              }
+
+              const ordersDiv = document.getElementById("orders");
+
+              ordersDiv.innerHTML = "";
+
               const snap = await db
-                .collection("products")
-                .where("name", "==", item.name)
+                .collection("orders")
+                .orderBy("createdAt", "desc")
                 .get();
 
-              snap.forEach(async (doc) => {
-                const product = doc.data();
+              snap.forEach((doc) => {
+                const o = doc.data();
 
-                await db
-                  .collection("products")
-                  .doc(doc.id)
-                  .update({
-                    stock: product.stock - item.qty,
-                  });
+                ordersDiv.innerHTML += `
+            <div style="
+              background:white;
+              padding:15px;
+              margin:15px 0;
+              border-radius:10px;
+            ">
+
+              <h4>${o.customerName}</h4>
+
+              <p>${o.customerPhone}</p>
+
+              <p>${o.customerAddress}</p>
+
+              <p>
+                ${o.items.map((i) => `${i.name} x ${i.qty}`).join("<br>")}
+              </p>
+
+            </div>
+          `;
               });
             }
+            function toggleDarkMode() {
 
-            alert(
-              "✅ Order Successful!\n\n" +
-                "Thank you for shopping with MAK Cosmetics 💖",
-            );
-            window.scrollTo({
-              top: 0,
-              behavior: "smooth",
-            });
-            cart = [];
-            renderCart();
-          },
-        };
-
-        new Razorpay(options).open();
-      }
-
-      loadProducts();
-
-      async function viewOrders() {
-        const user = firebase.auth().currentUser;
-
-        if (!user || user.email !== ADMIN_EMAIL) {
-          alert("Admin only");
-          return;
-        }
-
-        const ordersDiv = document.getElementById("orders");
-
-        ordersDiv.innerHTML = "";
-
-        const snap = await db
-          .collection("orders")
-          .orderBy("createdAt", "desc")
-          .get();
-
-        snap.forEach((doc) => {
-          const o = doc.data();
-
-          ordersDiv.innerHTML += `
-      <div style="
-        background:white;
-        padding:15px;
-        margin:15px 0;
-        border-radius:10px;
-      ">
-
-        <h4>${o.customerName}</h4>
-
-        <p>${o.customerPhone}</p>
-
-        <p>${o.customerAddress}</p>
-
-        <p>
-          ${o.items.map((i) => `${i.name} x ${i.qty}`).join("<br>")}
-        </p>
-
-      </div>
-    `;
-        });
-      }
-      function toggleDarkMode() {
         document.body.classList.toggle("dark");
-      }
-      async function loadOrders() {
-        const user = firebase.auth().currentUser;
 
-        if (!user || user.email !== ADMIN_EMAIL) {
-          alert("Admin only");
-          return;
+        if (
+          document.body.classList.contains("dark")
+        ) {
+
+          localStorage.setItem(
+            "darkMode",
+            "enabled"
+          );
+
+        } else {
+
+          localStorage.setItem(
+            "darkMode",
+            "disabled"
+          );
+
         }
-
-        const ordersDiv = document.getElementById("orders");
-
-        if (showingOrders) {
-          ordersDiv.innerHTML = "";
-          showingOrders = false;
-          return;
-        }
-
-        ordersDiv.innerHTML = "<h2>Loading Orders...</h2>";
-
-        const snap = await db
-          .collection("orders")
-          .orderBy("createdAt", "desc")
-          .get();
-
-        ordersDiv.innerHTML = "<h2>Customer Orders</h2>";
-
-        snap.forEach((doc) => {
-          const order = doc.data();
-
-          let itemsHTML = "";
-
-          order.items.forEach((item) => {
-            itemsHTML += `
-        <p>
-          ${item.name}
-          x ${item.qty}
-        </p>
-      `;
-          });
-
-          ordersDiv.innerHTML += `
-
-      <div style="
-        background:white;
-        padding:20px;
-        margin:20px 0;
-        border-radius:15px;
-      ">
-
-        <h3>${order.customerName}</h3>
-
-        <p>${order.customerPhone}</p>
-
-        <p>${order.customerAddress}</p>
-
-        <hr>
-
-        ${itemsHTML}
-
-        <h3>
-          ₹${order.total}
-        </h3>
-
-      </div>
-
-    `;
-        });
-
-        showingOrders = true;
       }
-      loadProducts();
+            
+            async function loadOrders() {
+              const user = firebase.auth().currentUser;
+
+              if (!user || user.email !== ADMIN_EMAIL) {
+                alert("Admin only");
+                return;
+              }
+
+              const ordersDiv = document.getElementById("orders");
+
+              if (showingOrders) {
+                ordersDiv.innerHTML = "";
+                showingOrders = false;
+                return;
+              }
+
+              ordersDiv.innerHTML = "<h2>Loading Orders...</h2>";
+
+              const snap = await db
+                .collection("orders")
+                .orderBy("createdAt", "desc")
+                .get();
+
+              ordersDiv.innerHTML = "<h2>Customer Orders</h2>";
+
+              snap.forEach((doc) => {
+                const order = doc.data();
+
+                let itemsHTML = "";
+
+                order.items.forEach((item) => {
+                  itemsHTML += `
+              <p>
+                ${item.name}
+                x ${item.qty}
+              </p>
+            `;
+                });
+
+                ordersDiv.innerHTML += `
+
+            <div style="
+              background:white;
+              padding:20px;
+              margin:20px 0;
+              border-radius:15px;
+            ">
+
+              <h3>${order.customerName}</h3>
+
+              <p>${order.customerPhone}</p>
+
+              <p>${order.customerAddress}</p>
+
+              <hr>
+
+              ${itemsHTML}
+
+              <h3>
+                ₹${order.total}
+              </h3>
+
+            </div>
+
+          `;
+              });
+
+              showingOrders = true;
+            }
+
+            if (
+  localStorage.getItem("darkMode")
+  === "enabled"
+) {
+  document.body.classList.add("dark");
+}
+
+loadProducts();
+            loadProducts();
     </script>
     <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
       💬
