@@ -265,6 +265,19 @@
       <input type="text" id="customerPhone" placeholder="Phone Number" />
 
       <input type="text" id="customerAddress" placeholder="Address" />
+      <h3>Track Your Order</h3>
+
+<input
+  type="text"
+  id="trackOrderId"
+  placeholder="Enter Order ID"
+/>
+
+<button onclick="trackOrder()">
+  Track Order
+</button>
+
+<div id="trackingResult"></div>
       <div id="cart"></div>
       <div id="orders"></div>
       <button onclick="placeOrder()">Checkout</button>
@@ -788,6 +801,79 @@
 
         showingOrders = true;
       }
+      async function trackOrder() {
+
+  const orderId =
+    document.getElementById("trackOrderId").value;
+
+  if (!orderId) {
+    alert("Enter Order ID");
+    return;
+  }
+
+  const resultDiv =
+    document.getElementById("trackingResult");
+
+  resultDiv.innerHTML = "Searching...";
+
+  const snap = await db
+    .collection("orders")
+    .where("orderId", "==", orderId)
+    .get();
+
+  if (snap.empty) {
+
+    resultDiv.innerHTML = `
+      <p>
+        ❌ Order Not Found
+      </p>
+    `;
+
+    return;
+  }
+
+  snap.forEach((doc) => {
+
+    const order = doc.data();
+
+    resultDiv.innerHTML = `
+
+      <div style="
+        background:white;
+        padding:20px;
+        margin-top:20px;
+        border-radius:15px;
+      ">
+
+        <h3>
+          ${order.orderId}
+        </h3>
+
+        <p>
+          Customer:
+          ${order.customerName}
+        </p>
+
+        <p>
+          Payment:
+          ✅ Successful
+        </p>
+
+        <p>
+          Status:
+          🚚 Processing
+        </p>
+
+        <p>
+          Total:
+          ₹${order.total}
+        </p>
+
+      </div>
+
+    `;
+  });
+}
 
       loadProducts();
     </script>
