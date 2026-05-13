@@ -116,8 +116,8 @@
         object-fit: cover;
       }
       .card img:hover {
-  transform: scale(1.05);
-}
+        transform: scale(1.05);
+      }
 
       .card h3 {
         margin-top: 15px;
@@ -639,8 +639,14 @@
               });
             }
 
+            confetti({
+              particleCount: 200,
+              spread: 100,
+              origin: { y: 0.6 },
+            });
+
             alert(
-              "✅ Order Successful!\n\n" +
+              "🎉 Order Successful!\n\n" +
                 "Thank you for shopping with MAK Cosmetics 💖",
             );
             window.scrollTo({
@@ -784,5 +790,6 @@
     <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
       💬
     </a>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   </body>
 </html>
