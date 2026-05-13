@@ -606,6 +606,7 @@
             }
 
             await db.collection("orders").add({
+              orderId: "MAK" + Date.now(),
               customerName,
               customerPhone,
               customerAddress,
@@ -762,7 +763,10 @@
               margin:20px 0;
               border-radius:15px;
             ">
-
+<h2>
+  Order ID:
+  ${order.orderId}
+</h2>
               <h3>${order.customerName}</h3>
 
               <p>${order.customerPhone}</p>
