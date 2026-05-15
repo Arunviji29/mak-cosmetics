@@ -198,32 +198,156 @@
 
         color: #ff2e7a;
       }
+      .modal {
+        display: none;
+
+        position: fixed;
+
+        z-index: 9999;
+
+        left: 0;
+        top: 0;
+
+        width: 100%;
+        height: 100%;
+
+        background: rgba(0, 0, 0, 0.6);
+
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: white;
+
+        padding: 30px;
+
+        border-radius: 20px;
+
+        width: 300px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        text-align: center;
+      }
+
+      .close {
+        font-size: 30px;
+
+        cursor: pointer;
+
+        text-align: right;
+      }
+      .menu-btn {
+
+  font-size: 30px;
+
+  cursor: pointer;
+}
+
+.sidebar {
+
+  height: 100%;
+
+  width: 0;
+
+  position: fixed;
+
+  z-index: 99999;
+
+  top: 0;
+  left: 0;
+
+  background: #ff2e7a;
+
+  overflow-x: hidden;
+
+  transition: 0.4s;
+
+  padding-top: 60px;
+}
+
+.sidebar a {
+
+  padding: 15px 25px;
+
+  text-decoration: none;
+
+  font-size: 20px;
+
+  color: white;
+
+  display: block;
+}
+
+.sidebar .closebtn {
+
+  position: absolute;
+
+  top: 10px;
+  right: 20px;
+
+  font-size: 35px;
+}
     </style>
   </head>
 
   <body>
     <header>
+       <div
+    style="
+      display:flex;
+      align-items:center;
+      gap:15px;
+    "
+  >
+
+    <span
+      class="menu-btn"
+      onclick="openSidebar()"
+    >
+      ☰
+    </span>
+
       <h2>MAK Cosmetics</h2>
       <div>
-        <button onclick="googleLogin()">
-  Google Login
-</button>
-
-<button onclick="appleLogin()">
-  Apple Login
-</button>
-
-<button onclick="emailLogin()">
-  Email Login
-</button>
-
-<button onclick="logout()">
-  Logout
-</button>
+        <button onclick="openLoginModal()">Login</button>
+        <button onclick="logout()">Logout</button>
         <button onclick="loadOrders()">Orders</button>
         <button onclick="toggleDarkMode()">🌙</button>
       </div>
     </header>
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeLoginModal()"> &times; </span>
+
+        <h2>Login</h2>
+
+        <button onclick="googleLogin()">Continue with Google</button>
+
+        <button onclick="appleLogin()">Continue with Apple</button>
+
+        <button onclick="emailLogin()">Continue with Email</button>
+      </div>
+    </div>
+    <div id="sidebar" class="sidebar">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">
+        ×
+      </a>
+
+      <a href="#">Home</a>
+
+      <a href="#products"> Products </a>
+
+      <a href="#cart"> Cart </a>
+
+      <a href="#orders"> Orders </a>
+
+      <a href="https://wa.me/918056282330" target="_blank"> WhatsApp </a>
+    </div>
+    <span id="userInfo"></span>
     <div class="hero">
       <h1>Glow With MAK Cosmetics ✨</h1>
 
@@ -241,7 +365,7 @@
           />
           <h3>Skincare</h3>
         </div>
-         <div class="category-card">
+        <div class="category-card">
           <img
             src="https://th.bing.com/th/id/OIP.wkqB6VbtVmuY1T0BoHI0vQHaE7?w=305&h=203&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3"
           />
@@ -254,9 +378,6 @@
           />
           <h3>Jewelry</h3>
         </div>
-
-       
-        
       </div>
     </div>
     <div class="container">
@@ -279,7 +400,7 @@
       <button onclick="placeOrder()">Checkout</button>
 
       <div id="products" class="grid"></div>
-      <h3>🛒 Cart</h3> 
+      <h3>🛒 Cart</h3>
       <h3>Customer Details</h3>
 
       <input type="text" id="customerName" placeholder="Full Name" />
@@ -293,7 +414,7 @@
 
       <button onclick="trackOrder()">Track Order</button>
 
-      <div id="trackingResult"></div> 
+      <div id="trackingResult"></div>
       <div id="cart"></div>
       <div id="orders"></div>
       <button onclick="placeOrder()">Checkout</button>
@@ -333,99 +454,90 @@
       const storage = firebase.storage();
 
       let cart = [];
+      let wishlist = [];
       const ADMIN_EMAIL = "makcosmeticshop@gmail.com";
       let showingOrders = false;
 
       // AUTH
+      // OPEN LOGIN MODAL
+      function openLoginModal() {
+        document.getElementById("loginModal").style.display = "flex";
+      }
+
+      // CLOSE LOGIN MODAL
+      function closeLoginModal() {
+        document.getElementById("loginModal").style.display = "none";
+      }
+
       // GOOGLE LOGIN
-async function googleLogin() {
+      async function googleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
 
-  const provider =
-    new firebase.auth.GoogleAuthProvider();
+        try {
+          await firebase.auth().signInWithPopup(provider);
 
-  try {
+          closeLoginModal();
 
-    await firebase
-      .auth()
-      .signInWithPopup(provider);
+          alert("Google Login Success");
 
-    alert("Google Login Success");
+          loadProducts();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
 
-    loadProducts();
+      // APPLE LOGIN
+      async function appleLogin() {
+        const provider = new firebase.auth.OAuthProvider("apple.com");
 
-  } catch(err) {
+        try {
+          await firebase.auth().signInWithPopup(provider);
 
-    alert(err.message);
+          closeLoginModal();
 
-  }
-}
+          alert("Apple Login Success");
 
-// APPLE LOGIN
-async function appleLogin() {
+          loadProducts();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
 
-  const provider =
-    new firebase.auth.OAuthProvider("apple.com");
+      // EMAIL LOGIN
+      async function emailLogin() {
+        const email = prompt("Enter Email");
 
-  try {
+        const pass = prompt("Enter Password");
 
-    await firebase
-      .auth()
-      .signInWithPopup(provider);
+        try {
+          await firebase.auth().signInWithEmailAndPassword(email, pass);
 
-    alert("Apple Login Success");
+          closeLoginModal();
 
-    loadProducts();
+          alert("Login Success");
 
-  } catch(err) {
+          loadProducts();
+        } catch (err) {
+          if (err.code === "auth/user-not-found") {
+            await firebase.auth().createUserWithEmailAndPassword(email, pass);
 
-    alert(err.message);
+            closeLoginModal();
 
-  }
-}
+            alert("Account Created");
+          } else {
+            alert(err.message);
+          }
+        }
+      }
+      firebase.auth().onAuthStateChanged((user) => {
+        const info = document.getElementById("userInfo");
 
-// EMAIL LOGIN
-async function emailLogin() {
-
-  const email =
-    prompt("Enter Email");
-
-  const pass =
-    prompt("Enter Password");
-
-  try {
-
-    await firebase.auth()
-      .signInWithEmailAndPassword(
-        email,
-        pass
-      );
-
-    alert("Login Success");
-
-    loadProducts();
-
-  } catch(err) {
-
-    if (
-      err.code ===
-      "auth/user-not-found"
-    ) {
-
-      await firebase.auth()
-        .createUserWithEmailAndPassword(
-          email,
-          pass
-        );
-
-      alert("Account Created");
-
-    } else {
-
-      alert(err.message);
-
-    }
-  }
-}
+        if (user) {
+          info.innerHTML = "👋 " + user.email;
+        } else {
+          info.innerHTML = "";
+        }
+      });
 
       function logout() {
         firebase.auth().signOut();
@@ -621,6 +733,24 @@ async function emailLogin() {
         cart.splice(index, 1);
         renderCart();
       }
+      function addToWishlist(name) {
+
+  if (
+    wishlist.includes(name)
+  ) {
+
+    alert("Already in wishlist");
+
+    return;
+  }
+
+  wishlist.push(name);
+
+  alert(
+    name + " added to wishlist ❤️"
+  );
+
+}
 
       function renderCart() {
         const cartDiv = document.getElementById("cart");
@@ -968,7 +1098,15 @@ async function emailLogin() {
     `;
         });
       }
+      function openSidebar() {
+        document.getElementById("sidebar").style.width = "260px";
+      }
 
+      function closeSidebar() {
+        document.getElementById("sidebar").style.width = "0";
+      }
+
+      // existing code
       loadProducts();
     </script>
     <a href="https://wa.me/918056282330" class="whatsapp" target="_blank">
